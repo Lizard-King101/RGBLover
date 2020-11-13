@@ -25,16 +25,26 @@ var scheme = {
             saturation: 1,
             lightness: 0.5
           },
-          black: {
+        black: {
             hue: 0.5,
             saturation: 1,
             lightness: 0.5
-          },
-          selectionBackground: {
+        },
+        green: {
             hue: 0.5,
             saturation: 1,
             lightness: 0.5
-          }
+        },
+        yellow: {
+            hue: 0.75,
+            saturation: 1,
+            lightness: 0.5
+        },
+        selectionBackground: {
+            hue: 0.5,
+            saturation: 1,
+            lightness: 0.5
+        }
     },
     background: "#1b1b1b",
     frames: 16,
@@ -63,13 +73,14 @@ function Loop() {
 }
 
 function Initialize() {
-    let data_path = process.env.APPDATA;
     let packages = path.join(process.env.APPDATA, '..', 'local', 'Packages');
+    let originalFile = null;
     fs.readdir(packages, (err, files) => {
         if(err) {console.error(err); return}
         for(file of files) {
             if(file.includes('Microsoft.WindowsTerminal')) {
                 settings_path = path.join(packages, file, 'LocalState', 'settings.json');
+                originalFile = path.join(packages, file, 'LocalState', 'original_settings.json');
                 break;
             }
         }
@@ -83,7 +94,7 @@ function Initialize() {
                 settings_data.schemes.push(scheme);
                 scheme_index = settings_data.schemes.length - 1;
                 var_settings = JSON.parse(JSON.stringify(scheme.var_settings));
-                saveScheme();
+                saveScheme(originalFile);
             } else {
                 scheme = settings_data.schemes[scheme_index];
                 var_settings = JSON.parse(JSON.stringify(scheme.var_settings));
@@ -97,10 +108,11 @@ function Initialize() {
 }
 
 
-function saveScheme() {
+function saveScheme(path = null) {
     setVars();
     settings_data.schemes[scheme_index] = scheme;
-    fs.writeFileSync(settings_path, stringify(settings_data, null, 2));
+    let data = path ? stringify(settings_data, null, 2) : JSON.stringify(settings_data);
+    fs.writeFileSync(path ? path : settings_path, data);
 }
 
 function setVars() {
